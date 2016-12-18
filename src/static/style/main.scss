@@ -1,0 +1,13 @@
+
+body, html{ height: 100%; overflow: hidden; }
+ul{padding-left: 0; margin-bottom: 0;}
+li{list-style: none;}
+a,a:hover{color:#333;}
+
+#root{height: 100%;}
+/* fix bootstrap */
+.navbar-default .navbar-brand:hover {
+    color: initial;
+    background-color: initial;
+}
+/* end fix bootstrap */
