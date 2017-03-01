@@ -42,6 +42,7 @@ module.exports = {
         alias: {
             framework: `${defaultSettings.rootPath}/framework`,
             util: `${defaultSettings.rootPath}/framework/util`,
+            src: `${defaultSettings.srcPath}`,
 
             views: `${defaultSettings.srcPath}/views`,
             components: `${defaultSettings.srcPath}/components`,

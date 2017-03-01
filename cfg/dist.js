@@ -31,7 +31,7 @@ let config = Object.assign({}, baseConfig, {
             filename: '../index.html',
             inject: true, //Inject all scripts into the body
             hash: false,
-            chunks: ['index']
+            chunks: ['index_[contenthash]']
         }),
         /* new webpack.optimize.CommonsChunkPlugin({
             name: 'vendors',   // 将公共模块提取，生成名为`vendors`bundle

@@ -6,6 +6,18 @@ let formValidation = {
             return errorMsg;
         }
     },
+    equal: function(valAry, errorMsg='值不相等'){
+        if(!valAry.every((elm, indx, ary)=>{
+            if(ary[0]===elm){
+                return true;
+            }else{
+                return false;
+            }
+        })){
+            return errorMsg
+        }
+
+    },
     hasSpace: function(val, errorMsg){
         if(/\s/g.test(val)){
             return errorMsg;
@@ -104,6 +116,7 @@ let formValidation = {
     但它本身不具备验证能力, 它需要把请求委托给表单的策略类, 策略类才是真正的封装了验证算法(策略类见上面代码)
 */
 
+
 export default class Validator{
     constructor(){
         this.domRuleCache = {};
@@ -132,22 +145,29 @@ export default class Validator{
         }
         this.domRuleCache[name] = ary;
     }
+    /*
+    用法类似:
+    this.validator.addByValue('passw',[
+        {strategy: 'isEmpty', errorMsg:'密码不能为空'},
+        {strategy: 'hasSpace', errorMsg:'不能有空格'},
+    ]);
+
+     */
 
     addByValue(name, rules){
-        let ary = [],
-            self = this;
-        for(var i=0, rule; rule = rules[i++];){
-            (function(rule){
-                var strategyAry = rule.strategy.split(':'),
-                    strategy = strategyAry.shift();
-                    strategyAry.unshift(null);
-                    strategyAry.push(rule.errorMsg);
+        let ary = [];
+        for(let i=0, rule; rule = rules[i++];){
 
-                ary.push(function(value){
-                    strategyAry[0] = value;
-                    return formValidation[strategy].apply(self,strategyAry);
-                });
-            })(rule);
+            let valAry = rule.strategy.split(':'),
+                strategy = valAry.shift();
+
+            valAry.push(rule.errorMsg);
+
+            ary.push((value)=>{
+                valAry.unshift(value);
+                return formValidation[strategy].apply(this,valAry);
+            });
+
         }
         this.valueRuleCache[name] = ary;
     }
@@ -164,6 +184,10 @@ export default class Validator{
             }
         }
     }
+    // 程序会根据要验证的值 遍历 对应的规则序列, 每次碰见错误会进行回调, 并返回错误代码
+    // name 是对应的规则数组名
+    // value 对应要验证的值
+
     valiOneByValue(name,value,cb=()=>{}){
         for(var i=0, fn; fn = this.valueRuleCache[name][i++];){
             var msg = fn(value);

@@ -4,12 +4,12 @@
 import { combineReducers } from 'redux';
 
 // 引入 reducer,
-import valiState from 'components/login/LoginRedux.js';
+import loginState from 'components/login/LoginRedux.js';
 
 // 导出所有 action
-export { changeState } from 'components/login/LoginRedux.js';
+export { changeState, doLogin } from 'components/login/LoginRedux.js';
 
 //  默认导出所有 reducer
 export default combineReducers({
-    valiState
+    loginState
 });

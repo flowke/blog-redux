@@ -1,13 +1,24 @@
 
 body, html{ height: 100%; overflow: hidden; }
-ul{padding-left: 0; margin-bottom: 0;}
+ul{padding-left: 0; margin: 0;}
 li{list-style: none;}
 a,a:hover{color:#333;}
-
+/* 颜色 */
+.text-red{color:#B03060}
+.text-orange{color:#FE9A76}
+.text-yellow{color:#FFD700}
+.text-olive{color:#32CD32}
+.text-green{color:#016936}
+.text-teal{color:#008080}
+.text-blue{color:#0E6EB8}
+.text-violet{color:#EE82EE}
+.text-purple{color:#B413EC}
+.text-pink{color:#FF1493}
+.text-brown{color:#A52A2A}
+.text-grey{color:#A0A0A0}
+.text-black{color:#000000}
+/*end 颜色 */
 #root{height: 100%;}
 /* fix bootstrap */
-.navbar-default .navbar-brand:hover {
-    color: initial;
-    background-color: initial;
-}
+
 /* end fix bootstrap */

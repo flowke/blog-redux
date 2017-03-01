@@ -13,9 +13,9 @@ export default (browserHistory) => (
         <Route path="/" component={Frame}>
             <IndexRoute component={Home} ></IndexRoute>
             <Route path="/inbox" component={Inbox}></Route>
-            <Route path="/login" component={Login}></Route>
-            <Route path="/signin" component={Signin}></Route>
-            <Route path="/write" component={Write}></Route>
+            <Route path="user/login" component={Login}></Route>
+            <Route path="user/signin" component={Signin}></Route>
+            <Route path="user/write" component={Write}></Route>
         </Route>
     </Router>
 );

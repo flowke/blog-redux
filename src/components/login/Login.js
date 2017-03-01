@@ -9,123 +9,125 @@ export default class Login extends React.Component{
     constructor(props){
         super(props);
 
+        this.state = {
+            successType: '',
+            hasSubmitSuccess: false
+        }
+
         this.validator = new Validator();
 
         this.onChange = this.onChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.formSubmit = this.formSubmit.bind(this);
 
-        this.canSubmit = true;
     }
 
-    handleSubmit(ev){
+    formSubmit(ev){
         ev.stopPropagation();
         ev.preventDefault();
-        let form = ev.target;
-        let {isLogin, changeState, push, changeNavAll} = this.props;
-        let username = {
-            hintClass: '',
-            wrongMsg: ''
-        },
-            passw = Object.assign({}, username),
-            cfpassw = Object.assign({}, username);
 
-        let valiData = isLogin ? {username, passw} : {username, passw, cfpassw};
+        let data = this.getSubmitData();
 
-        let submitData = {
-            username: form.username.value,
-            passw: form.passw.value
+        let hasValid = this.valiData(data);
+
+        if( hasValid === true ){
+            this.doRequest(data);
         }
-        if(!isLogin){
-            submitData = Object.assign({},submitData, {
+    }
+    // 获取提交的数据
+    // 会根据是注册还是登录返回不同的数据
+    getSubmitData(){
+        let {form} = this.refs,
+            isLogin = this.props;
+
+        let data = null;
+
+        if(isLogin){
+            data = {
+                username: form.username.value,
+                passw: form.passw.value
+            }
+        }else{
+            data = {
+                username:form.username.value,
+                passw: form.passw.value,
                 cfpassw: form.cfpassw.value
-            });
+            }
         }
 
+        return data;
+    }
+    // 验证数据,
+    // 数据可能是用户登录的, 可能是用于注册的
+    // 返回bool
+    valiData(data){
+        let valiData = null;
+        let state = null;
 
-        let {canSubmit} = this;
+        // 改变loginRedux的state
+        let {changeState} = this.props;
 
-        this.validator.valiByValue({
-            username: form.username.value,
-            passw: form.passw.value
-        },(name,msg)=>{
-            valiData[name] = {
-                hintClass: 'has-error',
+        if(this.props.isLogin){
+            valiData = data;
+        }else{
+            valiData = {...data,
+                cfpassw : [data.passw, data.cfpassw]
+            }
+        }
+
+        this.validator.valiByValue(valiData,(name, msg)=>{
+            state[name] = {
                 wrongMsg: msg
             }
-            canSubmit = false;
         });
 
-        if(!isLogin && (form.passw.value !== form.cfpassw.value) ){
-            valiData.cfpassw = {
-                hintClass: 'has-error',
-                wrongMsg: '密码不一致'
-            }
-            canSubmit = false;
+        if(state !== null){
+            changeState('all',state);
+            return false;
+        }else{
+            return true;
         }
 
-        changeState('all',valiData);
+    }
 
-        let url = isLogin ? `${config.url}/home/user/login` : `${config.url}/home/user/signin`;
+    doRequest(data){
+        let {isLogin, doLogin, doSignup} = this.props;
 
-        if(canSubmit){
-            $.post(url,submitData)
-            .done((data)=>{
-                let {code, msg} = data;
-                let wrongState = {
-                    hintClass : 'has-error',
-                    wrongMsg: msg
-                };
-
-                if(isLogin){
-                    if(code===0){
-                        changeNavAll({
-                            hasLogin: true,
-                            whichView: 'home'
-                        });
-                        push('/')
-                    }else if(code===1){
-                        changeState('username', wrongState);
-                    }else if(code===2){
-                        changeState('passw',wrongState);
-                    }
-                }else{
-                    if(code===0){
-                        push('/')
-                        changeNavAll({
-                            hasLogin: true,
-                            whichView: 'home'
-                        });
-                    }else if(code===1){
-                        changeState('username',{
-                            hintClass: 'has-error',
-                            wrongMsg: '注册失败,可能用户名已存在'
-                        })
-                    }
-                }
-                this.canSubmit = true;
-            });
+        if(isLogin){
+            doLogin(`${config.url}/home/user/login`, data);
+        }else{
+            doSignup(`${config.url}/home/user/signup`, data);
         }
 
     }
 
     onChange(token, value){
-        let {changeState} = this.props ;
 
-        let data = {
-            hintClass: '',
-            wrongMsg: ''
+        let {changeState} = this.props;
+
+        let wrongMsg = this.valiByOneStep(token, value);
+
+        if(wrongMsg){
+            this.changeWrongMsgState(token, wrongMsg);
         }
 
-        if(token !== 'cfpassw'){
-
-            this.validator.valiOneByValue(token, value,(msg)=>{
-                data.hintClass = 'has-error';
-                data.wrongMsg = msg;
-            });
+        if(this.props.resWrong){
+            changeState('resWrong','');
         }
-
-        changeState(token, data);
     }
+
+    valiByOneStep(token, value){
+        let wrongMsg = '';
+        this.validator.valiOneByValue(token, value, (msg)=>{
+            wrongMsg = msg;
+        })
+        return wrongMsg;
+    }
+
+    changeWrongMsgState(token, wrongMsg){
+        let {changeState} = this.props;
+        changeState(token, {wrongMsg});
+    }
+
 
     componentDidMount(){
         this.validator.addByValue('username',[
@@ -139,33 +141,67 @@ export default class Login extends React.Component{
             {strategy: 'isEmpty', errorMsg:'密码不能为空'},
             {strategy: 'hasSpace', errorMsg:'不能有空格'},
         ]);
+        this.validator.addByValue('cfpassw',[
+            {strategy: 'equal', errorMsg:'密码不一致'}
+        ]);
+
     }
 
     render(){
-        let {username, passw, cfpassw, changeState, isLogin} = this.props;
+        let {username, passw, cfpassw, changeState, isLogin, resWrong, isPending} = this.props;
+
+        let { successType } = this.state;
+
+        let wrongClass = resWrong ? 'error':'';
+
+        let pendingClass = isPending ? 'loading' : '';
+
+        let signSuccess = !!successType;
+
         return(
             <div>
-                <form className={style.form} onSubmit={this.handleSubmit} role="form">
+                <form className={`ui form ${signSuccess?'success':''} ${wrongClass} ${pendingClass} ${style.form}`}
+                    onSubmit={this.formSubmit}
+                    ref='form'
+                    role="form"
+                >
+
+                    {
+                        signSuccess
+                        ?
+                        (<div className="ui success message">
+                            <div className="header">注册成功</div>
+                            <p>即将自动登陆</p>
+                        </div>)
+                        : ''
+                    }
+
+                    <div className="ui error message">
+                        <div className="header">错误</div>
+                        <p>{resWrong}</p>
+                    </div>
+
                     <Input
                         data={{
                             type: 'text',
                             placeholder: 'User Name',
                             name: 'username',
-                            fontIcon: 'glyphicon-user',
+                            fontIcon: 'user',
                             token: 'username'
                         }}
-                        valiData={username}
+                        wrongMsg={username.wrongMsg}
                         onChange={this.onChange}
                     />
+
                     <Input
                         data={{
                             type: 'password',
                             placeholder: 'Password',
                             name: 'passw',
-                            fontIcon: 'glyphicon-lock',
+                            fontIcon: 'unlock alternate',
                             token: 'passw'
                         }}
-                        valiData={passw}
+                        wrongMsg={passw.wrongMsg}
                         onChange={this.onChange}
                     />
                     {
@@ -176,10 +212,10 @@ export default class Login extends React.Component{
                                     type: 'password',
                                     placeholder: 'Confirm Password',
                                     name: 'cfpassw',
-                                    fontIcon: 'glyphicon-lock',
+                                    fontIcon: 'lock',
                                     token: 'cfpassw'
                                 }}
-                                valiData={cfpassw}
+                                wrongMsg={cfpassw.wrongMsg}
                                 onChange={this.onChange}
                             />
                     }

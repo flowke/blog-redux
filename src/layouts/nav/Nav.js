@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import style from './Nav.scss';
 import * as navAction from './NavRedux.js';
-
+import {changeState as changeLoginState} from 'components/login/LoginRedux.js';
 import config from 'config/config.json';
 
 const propTypes = {
@@ -14,10 +14,10 @@ class Nav extends Component{
 
     reDirect(token,ev){
 
-        let {push, navActions, navState} = this.props;
-        let {hasLogin} = navState;
+        let {push, navActions, navState, changeLoginState, loginState} = this.props;
+        let {hasLogin} = loginState;
 
-        let {changeLoginState, changeView, changeNavAll } = navActions;
+        let {changeView, changeNavAll } = navActions;
 
         ev.stopPropagation();
         ev.preventDefault();
@@ -31,44 +31,42 @@ class Nav extends Component{
             case 'write':
 
                 if(hasLogin){
-                    push('/write');
+                    push('/user/write');
                 }else{
-                    push('/login');
+                    push('/user/login');
                 }
+                break;
+            case 'userCenter':
+                push('/user/center')
                 break;
             case 'login':
                 if(hasLogin){
 
                     $.post(`${config.url}/home/user/logout`);
-
-                    changeLoginState(false);
+                    push('/');
+                    changeLoginState('hasLogin',false);
                 }else{
-                    push('/login');
+                    push('/user/login');
                 }
-
         }
     }
 
     componentDidMount(){
-        $('[data-toggle="tooltip"]').tooltip({trigger:'hover'});
 
-        let {changeLoginState} = this.props.navActions;
+        let {changeLoginState} = this.props;
 
         $.post(`${config.url}/home/user/autoLog`)
         .done((data)=>{
             let{code} = data;
 
             if(code===0){
-                console.log(code)
-                changeLoginState(true);
-
+                changeLoginState('hasLogin',true);
             }
         })
     }
 
-    componentUillUnmount(){
+    componentWillUnmount(){
 
-        $('[data-toggle="tooltip"]').off();
 
     }
 
@@ -79,48 +77,87 @@ class Nav extends Component{
 
         return(
             <nav className={` ${style.nav}`} role="navigation">
-                <div className={`${style.collection1}`} id="bs-example-navbar-collapse-1">
-                    <ul className={`${style.navList} ${style.top} `}>
-                        <li className={whichView === 'home'? active: ''}
-                            onClick = {this.reDirect.bind(this,'home')}
-                        >
-                            <span href="#" className={`${style.brand} `}>F</span>
-                        </li>
+                <ul className={`${style.navList} ${style.top} `}>
+                    <li className={whichView === 'home'? active: ''}
+                        onClick = {(ev)=>{this.reDirect('home',ev)}}
+                    >
+                        <span href="#" className={`${style.brand} `}>F</span>
+                    </li>
+                    <li
+                        className={whichView==='inbox'? active: ''}
+                        onClick = {(ev)=>{this.reDirect('inbox',ev)}}
+                        data-tooltip="归档"
+                        data-position="right center"
+                        data-inverted=""
+                        data-variation="tiny"
+                        title="Inbox"
+                        ref="inbox">
+                        <i className={`icon archive`}></i>
+                    </li>
+                    <li
+                        className={whichView==='write'? active: ''}
+                        onClick = {(ev)=>{this.reDirect('write',ev)}}
+                        data-tooltip="写文章"
+                        data-position="right center"
+                        data-inverted=""
+                        title="写文章"
+                        ref="write"
+                    >
+                        <i className={`icon write`}></i>
+                    </li>
+                </ul>
+                <ul className={`${style.navList} ${style.bottom}`}>
+                    {
+                        hasLogin
+                        ?[
+                            <li
+                                className={whichView === 'userInfo'? userAct:''}
+                                onClick = {(ev)=>{this.reDirect('userInfo',ev)}}
+                                data-tooltip={"个人中心"}
+                                data-position="right center"
+                                data-inverted=""
+                                key="userInfo"
+                            ><i className="icon user"></i></li>,
                         <li
-                            className={whichView==='inbox'? active: ''}
-                            onClick = {this.reDirect.bind(this,'inbox')}
-                            data-toggle="tooltip"
-                            data-placement="right"
-                            title="Inbox"
-                            ref="inbox">
-                            <span className={`glyphicon glyphicon-inbox`}></span>
-                        </li>
+                            className={whichView === 'like'? userAct:''}
+                            onClick = {(ev)=>{this.reDirect('like',ev)}}
+                            data-tooltip={"喜欢"}
+                            data-position="right center"
+                            data-inverted=""
+                            key="like"
+                        ><i className="icon heart"></i></li>,
                         <li
-                            className={whichView==='write'? active: ''}
-                            onClick = {this.reDirect.bind(this,'write')}
-                            data-toggle="tooltip"
-                            data-placement="right"
-                            title="写文章"
-                            ref="write"
-                        >
-                            <span className={`glyphicon glyphicon-pencil`}></span>
-                        </li>
-                    </ul>
-                    <ul className={`${style.navList} ${style.bottom}`}>
+                            className={whichView === 'bookmark'? userAct:''}
+                            onClick = {(ev)=>{this.reDirect('bookmark',ev)}}
+                            data-tooltip={"收藏"}
+                            data-position="right center"
+                            data-inverted=""
+                            key="bookmark"
+                        ><i className="icon bookmark"></i></li>,
                         <li
-                            className={whichView === 'userEntry'? userAct:''}
-                            onClick = {this.reDirect.bind(this, 'login')}
-                            data-toggle="tooltip"
-                            data-placement="right"
-                            data-original-title={hasLogin ? '注销':'登录'}
-                            ref="login">
-                            <span
-                                className={`glyphicon ${hasLogin?'glyphicon-log-in':'glyphicon-user'}`}>
-                            </span>
-
-                        </li>
-                    </ul>
-                </div>
+                            className={whichView === 'announcement'? userAct:''}
+                            onClick = {(ev)=>{this.reDirect('announcement',ev)}}
+                            data-tooltip={"消息"}
+                            data-position="right center"
+                            data-inverted=""
+                            key="announcement"
+                        ><i className="icon announcement"></i></li>
+                        ]
+                        :
+                        ""
+                    }
+                    <li
+                        className={whichView === 'userEntry'? userAct:''}
+                        onClick = {(ev)=>{this.reDirect('login',ev)}}
+                        data-tooltip={hasLogin ? '注销':'登录'}
+                        data-position="right center"
+                        data-inverted=""
+                        ref="login">
+                        <i
+                            className={`icon ${hasLogin?'sign out':'sign in'}`}>
+                        </i>
+                    </li>
+                </ul>
             </nav>
         );
     }
@@ -129,8 +166,10 @@ class Nav extends Component{
 Nav.propTypes = propTypes;
 
 export default connect(state=>({
-    navState: state.nav
+    navState: state.nav,
+    loginState: state.login
 }), dispatch=>({
     navActions: bindActionCreators(navAction, dispatch),
+    changeLoginState: bindActionCreators(changeLoginState, dispatch),
     push: bindActionCreators(push,dispatch)
 }))(Nav);

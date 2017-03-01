@@ -8,12 +8,12 @@ import Wrapper from 'components/login/Wrapper.js';
 import LoginPanel from 'components/login/Login.js';
 
 import { changeState } from './SigninRedux.js';
+import * as navActions from 'layouts/nav/NavRedux.js';
 
  class Signin extends React.Component{
 
     render(){
         let {changeState, push, valiState} = this.props;
-        console.log(valiState)
         return (
             <TwoColFrame>
                 <Info tit="注册">
@@ -26,6 +26,7 @@ import { changeState } from './SigninRedux.js';
                             changeState={changeState}
                             {...valiState}
                             push={push}
+                            {...this.props.navActions}
                         />
                     </Wrapper>
                 </Info>
@@ -38,5 +39,6 @@ export default connect( state => ({
     valiState: state.signin.valiState
 }) , dispatch => ({
     changeState: bindActionCreators(changeState, dispatch),
-    push: bindActionCreators(push,dispatch)
+    push: bindActionCreators(push,dispatch),
+    navActions: bindActionCreators(navActions, dispatch)
 })  )(Signin);

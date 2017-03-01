@@ -5,32 +5,30 @@ export default class extends React.Component{
         this.state = {
             value: ''
         }
+        this.onChange = this.onChange.bind(this);
     }
-    onChange(token,ev){
+    onChange(ev){
         let value = ev.target.value;
+        let { onChange, data } = this.props;
         this.setState({ value });
-        this.props.onChange(token, value);
+        onChange(data.token, value);
     }
     render(){
-        let {data, valiData} = this.props;
-        let { placeholder, name, fontIcon, type, token} = data;
-        let {hintClass, wrongMsg} = valiData;
-        let {value} = this.state
+        let {data, wrongMsg} = this.props;
+        let { placeholder, name, fontIcon, type} = data;
+        let {value} = this.state;
         return(
-            <div className={`form-group ${hintClass}`}>
-                <div className="input-group input-group-lg">
-                    <div className="input-group-addon">
-                        <span className={`glyphicon ${fontIcon}`}></span>
-                    </div>
+            <div className={`field ${ wrongMsg ? 'error': ''}`}>
+                {wrongMsg?<label className="">{wrongMsg}</label>:""}
+                <div className="ui left icon input fluid">
+                    <i className={`icon ${fontIcon}`}></i>
                     <input type={type}
-                        onChange={this.onChange.bind(this,token)}
-                        className={`form-control`}
+                        onChange={this.onChange}
                         name={name||''}
                         placeholder={placeholder}
                         value = {value}
                     />
                 </div>
-                {wrongMsg?<span className="help-block">{wrongMsg}</span>:""}
             </div>
         );
     }

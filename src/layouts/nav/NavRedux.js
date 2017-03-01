@@ -1,19 +1,16 @@
 import { combineReducers } from 'redux';
+import {pre} from 'util/String';
+
 let initialState = {
-    hasLogin: false,
     whichView: 'home'
 }
 
-const CHANGE_LOGIN_STATE = 'CHANGE_LOGIN_STATE';
-const CHANGE_VIEW_SELECTOR = 'CHANGE_VIEW_SELECTOR';
-const CHANGE_NAV_ALL_STATE = 'CHANGE_NAV_ALL_STATE';
+let prefix = 'NAV';
 
-export function changeLoginState(bol){
-    return {
-        type: CHANGE_LOGIN_STATE,
-        data: bol
-    }
-}
+const CHANGE_VIEW_SELECTOR = pre(prefix, 'CHANGE_VIEW_SELECTOR');
+const CHANGE_NAV_ALL_STATE = pre(prefix, 'CHANGE_NAV_ALL_STATE');
+
+
 export function changeView(str){
     return {
         type: CHANGE_VIEW_SELECTOR,
@@ -30,10 +27,6 @@ export function changeNavAll(data){
 
 export default (state = initialState, action)=>{
     switch(action.type){
-        case CHANGE_LOGIN_STATE:
-            return Object.assign({},state,{
-                hasLogin: action.data
-            });
         case CHANGE_VIEW_SELECTOR:
             return Object.assign({},state,{
                 whichView: action.data

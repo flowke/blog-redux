@@ -3,9 +3,11 @@
 import login from 'views/login/LoginRedux.js';
 import signin from 'views/login/SigninRedux.js';
 import nav from 'layouts/nav/NavRedux.js';
+import main from 'reduxs/commonRedux.js';
 
 export default {
     login,
     signin,
-    nav
+    nav,
+    main
 }

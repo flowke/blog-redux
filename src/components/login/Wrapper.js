@@ -5,12 +5,12 @@ export default ({isLogin, push, children})=>{
         <section className={`${style.section}`}>
             <header className={`${style.header}`}>
                 <span
-                    className={isLogin ? 'text-primary' : 'text-muted'}
-                    onClick = {push.bind(null,'/login')}
+                    className={isLogin ? 'text-blue' : 'text-grey'}
+                    onClick = {push.bind(null,'/user/login')}
                 > 登陆 </span>·
                 <span
-                    className={isLogin ? 'text-muted' : 'text-primary'}
-                    onClick={push.bind(null,'/signin')}
+                    className={isLogin ? 'text-grey' : 'text-blue'}
+                    onClick={push.bind(null,'/user/signin')}
                 > 注册 </span>
             </header>
             {children}

@@ -1,10 +1,10 @@
 export default ({value})=>{
 
     return(
-        <div className="form-group">
+        <div className="field">
             <button
                 type="submit"
-                className="btn btn-success btn-lg btn-block"
+                className="ui button fluid primary"
             >
                 {value}
             </button>
